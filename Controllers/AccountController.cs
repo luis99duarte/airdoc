@@ -172,7 +172,7 @@ namespace identity.Controllers
 
                         /*else
                         {
-                          
+                          return <view for email verification>
                         }
                         */
                     }
