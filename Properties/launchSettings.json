@@ -1,0 +1,48 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "https://localhost:44325/",
+      "sslPort": 44325
+    }
+  },
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "client_url": "http://localhost/security/airdoc-openid/redirect",
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "jsWebView2Debugging": false
+    },
+    "identity": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "client_url": "http://localhost/security/airdoc-openid/redirect",
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      },
+      "applicationUrl": "http://localhost:5000;https://localhost:5001"
+    },
+    "Custom": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:35670;http://localhost:7601"
+    },
+    "Development": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "client_url": "http://localhost/security/airdoc-openid/redirect",
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      },
+      "applicationUrl": "http://localhost:5000;https://localhost:5001"
+    },
+    "test": {
+      "commandName": "IISExpress"
+    }
+  }
+}
