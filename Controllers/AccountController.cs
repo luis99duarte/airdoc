@@ -299,10 +299,11 @@ namespace identity.Controllers
             appUser.Email = model.Email; 
             appUser.EmailConfirmed = true;
 
+
             if (model.Password != model.ConfirmPassword) {
 
-                Console.WriteLine("Password do not match ");
-                await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "password não coincide"));
+                Console.WriteLine("Passwords do not match ");
+                await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "passwords não coincidem"));
 
                 ModelState.AddModelError(string.Empty, AccountOptions.InvalidPasswordIdenticalErrorMessage);
 
@@ -310,8 +311,8 @@ namespace identity.Controllers
             else {
                 if (model.Email != model.ConfirmEmail)
                 {
-                    Console.WriteLine("Email do not match ");
-                    await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "email não coincide"));
+                    Console.WriteLine("Emails do not match ");
+                    await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "emails não coincidem"));
 
                     ModelState.AddModelError(string.Empty, AccountOptions.InvalidEmailIdenticalErrorMessage);
                 }

@@ -63,10 +63,10 @@ namespace identity
 
             services.AddIdentity<ApplicationUser, IdentityRole>(op =>
             {
-                op.Password.RequireDigit = false;
-                op.Password.RequiredLength = 1;
-                op.Password.RequireLowercase = false;
-                op.Password.RequireUppercase = false;
+                op.Password.RequireDigit = true;
+                op.Password.RequiredLength = 6;
+                op.Password.RequireLowercase = true;
+                op.Password.RequireUppercase = true;
                 op.Password.RequireNonAlphanumeric = false;
                 
 
