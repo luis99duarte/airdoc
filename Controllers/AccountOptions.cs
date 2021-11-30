@@ -23,5 +23,6 @@ namespace identity.Controllers
         public static string InvalidCredentialsErrorMessage = "As credênciais inseridas não são válidas";
         public static string InvalidRegistrationErrorMessage = "O utilizador já existe";
         public static string InvalidPasswordIdenticalErrorMessage = "As passwords indicadas não coincidem";
+        public static string InvalidEmailIdenticalErrorMessage = "Os emails indicadoos não coincidem";
     }
 }

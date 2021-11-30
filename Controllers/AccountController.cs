@@ -170,11 +170,12 @@ namespace identity.Controllers
                         if(await _userManager.IsEmailConfirmedAsync(user))
                             return Redirect(model.ReturnUrl);
 
-                        /*else
+                        else
                         {
-                          return <view for email verification>
+                            // return <view for email verification>
+                            return RedirectToAction("EmailVerification", model);
                         }
-                        */
+                        
                     }
 
                     _logger.LogInformation("RETURN URL >>>" + model.ReturnUrl + "<<<");
@@ -305,38 +306,56 @@ namespace identity.Controllers
 
                 ModelState.AddModelError(string.Empty, AccountOptions.InvalidPasswordIdenticalErrorMessage);
 
-            } else { 
-
-                IdentityResult result = await _userManager.CreateAsync(appUser, model.Password);
-
-                if (result.Succeeded)
+            } 
+            else {
+                if (model.Email != model.ConfirmEmail)
                 {
-                    result = await _userManager.AddToRolesAsync(appUser, new[] { "USER", model.Role });
+                    Console.WriteLine("Email do not match ");
+                    await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "email não coincide"));
+
+                    ModelState.AddModelError(string.Empty, AccountOptions.InvalidEmailIdenticalErrorMessage);
+                }
+
+                else
+                {
+                    IdentityResult result = await _userManager.CreateAsync(appUser, model.Password);
 
                     if (result.Succeeded)
-                    {
-                        Console.WriteLine("Vou colocar o email");
-                        result = await _userManager.SetEmailAsync(appUser, model.Email);
-
-
-                        if (result.Succeeded) {
-                            Console.WriteLine("coloquei o email");
-                        }
-                        Claim test = new Claim("display_name", model.Username);
-
-                        result = await _userManager.AddClaimAsync(appUser, test);
+                    {   
+                        result = await _userManager.AddToRolesAsync(appUser, new[] { "USER", model.Role });
 
                         if (result.Succeeded)
                         {
-                            //return Redirect("~/");
-                            return RedirectToAction("Login", model);
+                            Console.WriteLine("Vou colocar o email");
+                            result = await _userManager.SetEmailAsync(appUser, model.Email);
+
+                            if (result.Succeeded)
+                            {
+                                
+                                var token = _userManager.GenerateEmailConfirmationTokenAsync(appUser);
+                                string castvar = (string)await token;
+                                var verificationLink = Url.Action("VerifyEmail", "Account", new { userId = appUser.Id, token = castvar }, Request.Scheme);
+                                _logger.Log(LogLevel.Warning, verificationLink);
+                                await _emailService.SendAsync(model.Email, "Verify Your Email", $"<a href=\"{verificationLink}\">Verify Email</a>", true);
+
+                                Console.WriteLine("coloquei o email");
+                            }
+                            Claim test = new Claim("display_name", model.Username);
+
+                            result = await _userManager.AddClaimAsync(appUser, test);
+
+                            if (result.Succeeded)
+                            {
+                                //return Redirect("~/");
+                                return RedirectToAction("Login", model);
+                            }
                         }
                     }
-                }
-                else
-                {
-                    await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials"));
-                    ModelState.AddModelError(string.Empty, AccountOptions.InvalidRegistrationErrorMessage);
+                    else
+                    {
+                        await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials"));
+                        ModelState.AddModelError(string.Empty, AccountOptions.InvalidRegistrationErrorMessage);
+                    }
                 }
             }
 
@@ -360,6 +379,30 @@ namespace identity.Controllers
 
             */
 
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> VerifyEmail(string userId, string token)
+        {
+            if(userId == null || token == null) {
+                return RedirectToAction("index", "home");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if(user == null)
+            {
+                ViewBag.ErrorMessage = $"The User ID {userId} is invalid";
+                return View("NotFound");
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            if(result.Succeeded)
+            {
+                return View("EmailVerification");
+            }
+
+            ViewBag.ErrorTitle = "Email cannot be confirmed";
+            return View("Error");
         }
 
 

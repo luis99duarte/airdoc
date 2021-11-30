@@ -21,6 +21,9 @@ namespace identity.Models
         [Required]
         public string Email { get; set; }
 
+        [Required]
+        public string ConfirmEmail { get; set; }
+
         public List<SelectListItem> Roles { get; }
 
         public string ReturnUrl { get; set; }
