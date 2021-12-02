@@ -24,5 +24,7 @@ namespace identity.Controllers
         public static string InvalidRegistrationErrorMessage = "O utilizador já existe";
         public static string InvalidPasswordIdenticalErrorMessage = "As passwords indicadas não coincidem";
         public static string InvalidEmailIdenticalErrorMessage = "Os emails indicadoos não coincidem";
+        public static string EmailAlreadyRegistered = "Este email já está registado noutra conta";
+        public static string InvalidPasswordValidation = "A password não cumpre algum dos requisitos de ter no mínimo de 6 caracteres, pelo menos 1 letra minúscula, 1 letra maiúscula e 1 número";
     }
 }

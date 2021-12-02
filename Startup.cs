@@ -61,7 +61,7 @@ namespace identity
                     options.UseMySql(Configuration.GetConnectionString("AUTHSERVERSQL"));
                 });
 
-            services.AddIdentity<ApplicationUser, IdentityRole>(op =>
+            /*services.AddIdentity<ApplicationUser, IdentityRole>(op =>
             {
                 op.Password.RequireDigit = true;
                 op.Password.RequiredLength = 6;
@@ -72,8 +72,12 @@ namespace identity
 
             })
                 .AddEntityFrameworkStores<ApplicationDbConatext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders(); */
 
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbConatext>()
+                .AddDefaultTokenProviders();
+           
             // Add application services.
             //  services.AddTransient<IEmailSender, EmailSender>();
 

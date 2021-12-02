@@ -309,6 +309,7 @@ namespace identity.Controllers
 
             } 
             else {
+
                 if (model.Email != model.ConfirmEmail)
                 {
                     Console.WriteLine("Emails do not match ");
@@ -316,13 +317,19 @@ namespace identity.Controllers
 
                     ModelState.AddModelError(string.Empty, AccountOptions.InvalidEmailIdenticalErrorMessage);
                 }
-
+                /*
+                if(_userManager.FindByEmailAsync(model.Email) != null)
+                {
+                    await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "email already used"));
+                    ModelState.AddModelError(string.Empty, AccountOptions.EmailAlreadyRegistered);
+                }
+                */
                 else
                 {
                     IdentityResult result = await _userManager.CreateAsync(appUser, model.Password);
 
                     if (result.Succeeded)
-                    {   
+                    {
                         result = await _userManager.AddToRolesAsync(appUser, new[] { "USER", model.Role });
 
                         if (result.Succeeded)
@@ -332,7 +339,7 @@ namespace identity.Controllers
 
                             if (result.Succeeded)
                             {
-                                
+
                                 var token = _userManager.GenerateEmailConfirmationTokenAsync(appUser);
                                 string castvar = (string)await token;
                                 var verificationLink = Url.Action("VerifyEmail", "Account", new { userId = appUser.Id, token = castvar }, Request.Scheme);
@@ -354,8 +361,13 @@ namespace identity.Controllers
                     }
                     else
                     {
-                        await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials"));
-                        ModelState.AddModelError(string.Empty, AccountOptions.InvalidRegistrationErrorMessage);
+                        ModelState.AddModelError(String.Empty, result.Errors.ToString());
+                        /*if (_userManager.FindByNameAsync(model.Username) == null) {
+                            await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials"));
+                            ModelState.AddModelError(string.Empty, AccountOptions.InvalidRegistrationErrorMessage);
+                        }*/
+
+
                     }
                 }
             }

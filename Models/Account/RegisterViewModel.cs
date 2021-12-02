@@ -15,6 +15,7 @@ namespace identity.Models
         [Required]
         public string Role { get; set; }
         [Required]
+        [DataType(DataType.Password)]
         public string Password { get; set; }
         [Required]
         public string ConfirmPassword { get; set; }
