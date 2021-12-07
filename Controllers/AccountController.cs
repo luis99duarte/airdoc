@@ -317,13 +317,7 @@ namespace identity.Controllers
 
                     ModelState.AddModelError(string.Empty, AccountOptions.InvalidEmailIdenticalErrorMessage);
                 }
-                /*
-                if(_userManager.FindByEmailAsync(model.Email) != null)
-                {
-                    await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "email already used"));
-                    ModelState.AddModelError(string.Empty, AccountOptions.EmailAlreadyRegistered);
-                }
-                */
+
                 else
                 {
                     IdentityResult result = await _userManager.CreateAsync(appUser, model.Password);
@@ -359,15 +353,9 @@ namespace identity.Controllers
                             }
                         }
                     }
-                    else
+                    foreach (var error in result.Errors)
                     {
-                        ModelState.AddModelError(String.Empty, result.Errors.ToString());
-                        /*if (_userManager.FindByNameAsync(model.Username) == null) {
-                            await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "invalid credentials"));
-                            ModelState.AddModelError(string.Empty, AccountOptions.InvalidRegistrationErrorMessage);
-                        }*/
-
-
+                        ModelState.AddModelError(string.Empty, error.Description);
                     }
                 }
             }
