@@ -265,7 +265,7 @@ namespace identity.Controllers
         /// Entry point into the registration workflow
         /// </summary>
         [HttpGet]
-        public async Task<IActionResult> Register(string rememberLogin, string returnUrl)
+        public IActionResult Register(string rememberLogin, string returnUrl)
         {
 
             // build a model so we know what to show on the login page
@@ -355,7 +355,7 @@ namespace identity.Controllers
                     }
                     foreach (var error in result.Errors)
                     {
-                        ModelState.AddModelError(string.Empty, error.Description);
+                        ModelState.AddModelError(error.Code, error.Description);
                     }
                 }
             }
