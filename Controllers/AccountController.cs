@@ -298,7 +298,7 @@ namespace identity.Controllers
 
             appUser.Email = model.Email; 
             appUser.EmailConfirmed = true;
-
+                
 
             if (model.Password != model.ConfirmPassword) {
 
@@ -356,6 +356,7 @@ namespace identity.Controllers
                     foreach (var error in result.Errors)
                     {
                         ModelState.AddModelError(error.Code, error.Description);
+                        _logger.Log(LogLevel.Warning, error.Code);
                     }
                 }
             }
@@ -420,46 +421,54 @@ namespace identity.Controllers
         {
             if (ModelState.IsValid)
             {
+                // This variable is used to switch the verification of the email
+                var checkEmailConfirmed = false;
+
                 // Find the user by email
                 var user = await _userManager.FindByEmailAsync(model.Email);
-                /*          If there is email confirmation
-                 * // If the user is found AND Email is confirmed
-                if (user != null && await _userManager.IsEmailConfirmedAsync(user))
+
+                if (checkEmailConfirmed)
                 {
+                    // If the user is found AND Email is confirmed
+                    if (user != null && await _userManager.IsEmailConfirmedAsync(user))
+                    {
+                        // Generate the reset password token
+                        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+                        // Build the password reset link
+                        var passwordResetLink = Url.Action("ResetPassword", "Account",
+                                new { email = model.Email, token = token }, Request.Scheme);
+
+                        // Log the password reset link
+                        _logger.Log(LogLevel.Warning, passwordResetLink);
+
+                        // Send the user to Forgot Password Confirmation view
+                        return View("ForgotPasswordConfirmation");
+                    }
+                }
+
+                // If the email provided isn't valid the view is returned
+                // to avoid account enumeration and brute force attacks
+                else
+                {
+                    if (user == null)
+                        return View("ForgotPasswordConfirmation");
+
                     // Generate the reset password token
                     var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
                     // Build the password reset link
-                    var passwordResetLink = Url.Action("ResetPassword", "Account",
-                            new { email = model.Email, token = token }, Request.Scheme);
+                    var passwordResetLink = Url.Action("ResetPassword", "Account", new { email = model.Email, token = token }, Request.Scheme);
+
+                    // Sends the email through the MailKit
+                    await _emailService.SendAsync(model.Email, "Reset Your Password", $"<a href=\"{passwordResetLink}\">Reset Password</a>", true);
 
                     // Log the password reset link
                     _logger.Log(LogLevel.Warning, passwordResetLink);
 
-                    // Send the user to Forgot Password Confirmation view
+                    // Send the Forgot Password Confirmation view
                     return View("ForgotPasswordConfirmation");
                 }
-                */
-                
-                // If the email provided isn't valid the view is returned
-                // to avoid account enumeration and brute force attacks
-                if(user == null)
-                    return View("ForgotPasswordConfirmation");
-
-                // Generate the reset password token
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-                // Build the password reset link
-                var passwordResetLink = Url.Action("ResetPassword", "Account", new { email = model.Email, token = token }, Request.Scheme);
-
-                // Sends the email through the MailKit
-                await _emailService.SendAsync(model.Email, "Reset Your Password",$"<a href=\"{passwordResetLink}\">Reset Password</a>", true);
-
-                // Log the password reset link
-                _logger.Log(LogLevel.Warning, passwordResetLink);
-
-                // Send the Forgot Password Confirmation view
-                return View("ForgotPasswordConfirmation");
             }
 
             return View(model);
