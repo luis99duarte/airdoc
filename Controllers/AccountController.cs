@@ -355,8 +355,30 @@ namespace identity.Controllers
                     }
                     foreach (var error in result.Errors)
                     {
-                        ModelState.AddModelError(error.Code, error.Description);
-                        _logger.Log(LogLevel.Warning, error.Code);
+                         /*
+                         ModelState.AddModelError(error.Code, String.Empty);
+                         _logger.Log(LogLevel.Warning, error.Code);
+                         */
+
+                        if(error.Code == "PasswordTooShort")
+                        {
+                            ModelState.AddModelError(error.Code, AccountOptions.PasswordTooShortErrorMessage);
+                        }
+
+                        if(error.Code == "PasswordRequiresDigit")
+                        {
+                            ModelState.AddModelError(error.Code, AccountOptions.PasswordRequiresDigitErrorMessage);
+                        }
+
+                        if(error.Code == "PasswordRequiresUpper")
+                        {
+                            ModelState.AddModelError(error.Code, AccountOptions.PasswordRequiresUpperErrorMessage);
+                        }
+
+                        if(error.Code == "PasswordRequiresLower")
+                        {
+                            ModelState.AddModelError(error.Code, AccountOptions.PasswordRequiresLowerErrorMessage);
+                        }
                     }
                 }
             }

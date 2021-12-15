@@ -25,6 +25,9 @@ namespace identity.Controllers
         public static string InvalidPasswordIdenticalErrorMessage = "As passwords indicadas não coincidem";
         public static string InvalidEmailIdenticalErrorMessage = "Os emails indicadoos não coincidem";
         public static string EmailAlreadyRegistered = "Este email já está registado noutra conta";
-        public static string InvalidPasswordValidation = "A password não cumpre algum dos requisitos de ter no mínimo de 6 caracteres, pelo menos 1 letra minúscula, 1 letra maiúscula e 1 número";
+        public static string PasswordTooShortErrorMessage = "A password tem de conter no mínimo de 6 caracteres";
+        public static string PasswordRequiresDigitErrorMessage = "A password tem de conter no mínimo um dígito de 0-9";
+        public static string PasswordRequiresUpperErrorMessage = "A password tem de conter no mínimo uma letra maiúscula";
+        public static string PasswordRequiresLowerErrorMessage = "A password tem de conter no mínimo uma letra minúscula";
     }
 }
