@@ -355,10 +355,10 @@ namespace identity.Controllers
                     }
                     foreach (var error in result.Errors)
                     {
-                         /*
-                         ModelState.AddModelError(error.Code, String.Empty);
+/*                         
+                         ModelState.AddModelError(error.Code, error.Description);
                          _logger.Log(LogLevel.Warning, error.Code);
-                         */
+*/                       
 
                         if(error.Code == "PasswordTooShort")
                         {
@@ -378,6 +378,16 @@ namespace identity.Controllers
                         if(error.Code == "PasswordRequiresLower")
                         {
                             ModelState.AddModelError(error.Code, AccountOptions.PasswordRequiresLowerErrorMessage);
+                        }
+
+                        if(error.Code == "DuplicateEmail")
+                        {
+                            ModelState.AddModelError(error.Code, AccountOptions.DuplicateEmailErrorMessage);
+                        }
+
+                        if(error.Code == "DuplicateUserName")
+                        {
+                            ModelState.AddModelError(error.Code, AccountOptions.InvalidRegistrationErrorMessage);
                         }
                     }
                 }

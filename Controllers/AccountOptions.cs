@@ -29,5 +29,6 @@ namespace identity.Controllers
         public static string PasswordRequiresDigitErrorMessage = "A password tem de conter no mínimo um dígito de 0-9";
         public static string PasswordRequiresUpperErrorMessage = "A password tem de conter no mínimo uma letra maiúscula";
         public static string PasswordRequiresLowerErrorMessage = "A password tem de conter no mínimo uma letra minúscula";
+        public static string DuplicateEmailErrorMessage = " Este email já está a ser utilizado por outra conta";
     }
 }

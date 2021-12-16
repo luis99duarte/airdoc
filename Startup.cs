@@ -68,8 +68,8 @@ namespace identity
                 op.Password.RequireLowercase = true;
                 op.Password.RequireUppercase = true;
                 op.Password.RequireNonAlphanumeric = false;
+                op.User.RequireUniqueEmail = true;
                 
-
             })
                 .AddEntityFrameworkStores<ApplicationDbConatext>()
                 .AddDefaultTokenProviders(); 
