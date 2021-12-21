@@ -298,106 +298,96 @@ namespace identity.Controllers
 
             appUser.Email = model.Email; 
             appUser.EmailConfirmed = true;
-                
 
-            if (model.Password != model.ConfirmPassword) {
+            IdentityResult result = await _userManager.CreateAsync(appUser, model.Password);
 
+            if (model.Password != model.ConfirmPassword)
+            {
                 Console.WriteLine("Passwords do not match ");
                 await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "passwords não coincidem"));
 
                 ModelState.AddModelError(string.Empty, AccountOptions.InvalidPasswordIdenticalErrorMessage);
+            }
 
-            } 
-            else {
+            else if (model.Email != model.ConfirmEmail)
+            {
+                Console.WriteLine("Emails do not match ");
+                await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "emails não coincidem"));
 
-                if (model.Email != model.ConfirmEmail)
+                ModelState.AddModelError(string.Empty, AccountOptions.InvalidEmailIdenticalErrorMessage);
+            }
+
+            else
+            {
+                if (result.Succeeded)
                 {
-                    Console.WriteLine("Emails do not match ");
-                    await _events.RaiseAsync(new UserLoginFailureEvent(model.Username, "emails não coincidem"));
-
-                    ModelState.AddModelError(string.Empty, AccountOptions.InvalidEmailIdenticalErrorMessage);
-                }
-
-                else
-                {
-                    IdentityResult result = await _userManager.CreateAsync(appUser, model.Password);
+                    result = await _userManager.AddToRolesAsync(appUser, new[] { "USER", model.Role });
 
                     if (result.Succeeded)
                     {
-                        result = await _userManager.AddToRolesAsync(appUser, new[] { "USER", model.Role });
+                        Console.WriteLine("Vou colocar o email");
+                        result = await _userManager.SetEmailAsync(appUser, model.Email);
 
                         if (result.Succeeded)
                         {
-                            Console.WriteLine("Vou colocar o email");
-                            result = await _userManager.SetEmailAsync(appUser, model.Email);
 
-                            if (result.Succeeded)
-                            {
+                            var token = _userManager.GenerateEmailConfirmationTokenAsync(appUser);
+                            string castvar = (string)await token;
+                            var verificationLink = Url.Action("VerifyEmail", "Account", new { userId = appUser.Id, token = castvar }, Request.Scheme);
+                            _logger.Log(LogLevel.Warning, verificationLink);
+                            await _emailService.SendAsync(model.Email, "Verify Your Email", $"<a href=\"{verificationLink}\">Verify Email</a>", true);
 
-                                var token = _userManager.GenerateEmailConfirmationTokenAsync(appUser);
-                                string castvar = (string)await token;
-                                var verificationLink = Url.Action("VerifyEmail", "Account", new { userId = appUser.Id, token = castvar }, Request.Scheme);
-                                _logger.Log(LogLevel.Warning, verificationLink);
-                                await _emailService.SendAsync(model.Email, "Verify Your Email", $"<a href=\"{verificationLink}\">Verify Email</a>", true);
+                            Console.WriteLine("coloquei o email");
+                        }
+                        Claim test = new Claim("display_name", model.Username);
 
-                                Console.WriteLine("coloquei o email");
-                            }
-                            Claim test = new Claim("display_name", model.Username);
+                        result = await _userManager.AddClaimAsync(appUser, test);
 
-                            result = await _userManager.AddClaimAsync(appUser, test);
-
-                            if (result.Succeeded)
-                            {
-                                //return Redirect("~/");
-                                return RedirectToAction("Login", model);
-                            }
+                        if (result.Succeeded)
+                        {
+                            return RedirectToAction("Login", model);
                         }
                     }
-                    foreach (var error in result.Errors)
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    switch (error.Code)
                     {
-/*                         
-                         ModelState.AddModelError(error.Code, error.Description);
-                         _logger.Log(LogLevel.Warning, error.Code);
-*/                       
-
-                        if(error.Code == "PasswordTooShort")
-                        {
+                        case "PasswordTooShort":
                             ModelState.AddModelError(error.Code, AccountOptions.PasswordTooShortErrorMessage);
-                        }
+                            break;
 
-                        if(error.Code == "PasswordRequiresDigit")
-                        {
+                        case "PasswordRequiresDigit":
                             ModelState.AddModelError(error.Code, AccountOptions.PasswordRequiresDigitErrorMessage);
-                        }
+                            break;
 
-                        if(error.Code == "PasswordRequiresUpper")
-                        {
+                        case "PasswordRequiresUpper":
                             ModelState.AddModelError(error.Code, AccountOptions.PasswordRequiresUpperErrorMessage);
-                        }
+                            break;
 
-                        if(error.Code == "PasswordRequiresLower")
-                        {
+                        case "PasswordRequiresLower":
                             ModelState.AddModelError(error.Code, AccountOptions.PasswordRequiresLowerErrorMessage);
-                        }
+                            break;
 
-                        if(error.Code == "DuplicateEmail")
-                        {
+                        case "DuplicateEmail":
                             ModelState.AddModelError(error.Code, AccountOptions.DuplicateEmailErrorMessage);
-                        }
+                            break;
 
-                        if(error.Code == "DuplicateUserName")
-                        {
+                        case "DuplicateUserName":
                             ModelState.AddModelError(error.Code, AccountOptions.InvalidRegistrationErrorMessage);
-                        }
+                            break;
+
+                        default:
+                            ModelState.AddModelError(String.Empty, AccountOptions.UnknownErrorMessage);
+                            break;
+
                     }
                 }
             }
 
             var vm = await BuildRegisterViewModelAsync(model);
             return View(vm);
-
-
-
 
             /*
             // build a model so we know what to show on the login page
@@ -453,55 +443,29 @@ namespace identity.Controllers
         {
             if (ModelState.IsValid)
             {
-                // This variable is used to switch the verification of the email
-                var checkEmailConfirmed = false;
 
                 // Find the user by email
                 var user = await _userManager.FindByEmailAsync(model.Email);
 
-                if (checkEmailConfirmed)
-                {
-                    // If the user is found AND Email is confirmed
-                    if (user != null && await _userManager.IsEmailConfirmedAsync(user))
-                    {
-                        // Generate the reset password token
-                        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-                        // Build the password reset link
-                        var passwordResetLink = Url.Action("ResetPassword", "Account",
-                                new { email = model.Email, token = token }, Request.Scheme);
-
-                        // Log the password reset link
-                        _logger.Log(LogLevel.Warning, passwordResetLink);
-
-                        // Send the user to Forgot Password Confirmation view
-                        return View("ForgotPasswordConfirmation");
-                    }
-                }
-
-                // If the email provided isn't valid the view is returned
-                // to avoid account enumeration and brute force attacks
-                else
-                {
-                    if (user == null)
-                        return View("ForgotPasswordConfirmation");
-
-                    // Generate the reset password token
-                    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-                    // Build the password reset link
-                    var passwordResetLink = Url.Action("ResetPassword", "Account", new { email = model.Email, token = token }, Request.Scheme);
-
-                    // Sends the email through the MailKit
-                    await _emailService.SendAsync(model.Email, "Reset Your Password", $"<a href=\"{passwordResetLink}\">Reset Password</a>", true);
-
-                    // Log the password reset link
-                    _logger.Log(LogLevel.Warning, passwordResetLink);
-
-                    // Send the Forgot Password Confirmation view
+                if (user == null)
                     return View("ForgotPasswordConfirmation");
-                }
+
+                // Generate the reset password token
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+                // Build the password reset link
+                var passwordResetLink = Url.Action("ResetPassword", "Account", new { email = model.Email, token = token }, Request.Scheme);
+
+                // Sends the email through the MailKit
+                await _emailService.SendAsync(model.Email, "Reset Your Password", $"<a href=\"{passwordResetLink}\">Reset Password</a>", true);
+
+                // Log the password reset link
+                _logger.Log(LogLevel.Warning, passwordResetLink);
+
+                // Send the Forgot Password Confirmation view
+                return View("ForgotPasswordConfirmation");
             }
+            
 
             return View(model);
         }
@@ -537,11 +501,33 @@ namespace identity.Controllers
                     {
                         return View("ResetPasswordConfirmation");
                     }
-                    // Display validation errors. For example, password reset token already
-                    // used to change the password or password complexity rules not met
+                    
+
                     foreach (var error in result.Errors)
                     {
-                        ModelState.AddModelError("", error.Description);
+                        switch (error.Code)
+                        {
+                            case "PasswordTooShort":
+                                ModelState.AddModelError(error.Code, AccountOptions.PasswordTooShortErrorMessage);
+                                break;
+
+                            case "PasswordRequiresDigit":
+                                ModelState.AddModelError(error.Code, AccountOptions.PasswordRequiresDigitErrorMessage);
+                                break;
+
+                            case "PasswordRequiresUpper":
+                                ModelState.AddModelError(error.Code, AccountOptions.PasswordRequiresUpperErrorMessage);
+                                break;
+
+                            case "PasswordRequiresLower":
+                                ModelState.AddModelError(error.Code, AccountOptions.PasswordRequiresLowerErrorMessage);
+                                break;
+
+                            default:
+                                ModelState.AddModelError(String.Empty, AccountOptions.UnknownErrorMessage);
+                                break;
+
+                        }
                     }
                     return View(model);
                 }

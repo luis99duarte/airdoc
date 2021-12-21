@@ -24,11 +24,11 @@ namespace identity.Controllers
         public static string InvalidRegistrationErrorMessage = "O utilizador já existe";
         public static string InvalidPasswordIdenticalErrorMessage = "As passwords indicadas não coincidem";
         public static string InvalidEmailIdenticalErrorMessage = "Os emails indicadoos não coincidem";
-        public static string EmailAlreadyRegistered = "Este email já está registado noutra conta";
         public static string PasswordTooShortErrorMessage = "A password tem de conter no mínimo de 6 caracteres";
         public static string PasswordRequiresDigitErrorMessage = "A password tem de conter no mínimo um dígito de 0-9";
         public static string PasswordRequiresUpperErrorMessage = "A password tem de conter no mínimo uma letra maiúscula";
         public static string PasswordRequiresLowerErrorMessage = "A password tem de conter no mínimo uma letra minúscula";
         public static string DuplicateEmailErrorMessage = " Este email já está a ser utilizado por outra conta";
+        public static string UnknownErrorMessage = "Nãõ foi possível concluir o processo, tente novamente mais tarde";
     }
 }
